@@ -1,0 +1,6 @@
+[package]
+name = "commitsparkles"
+version = "0.1.0"
+authors = ["Richard Fortescue-Webb <rfwebb@gmail.com>"]
+
+[dependencies]
