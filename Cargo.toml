@@ -4,3 +4,8 @@ version = "0.1.0"
 authors = ["Richard Fortescue-Webb <rfwebb@gmail.com>"]
 
 [dependencies]
+iron = "*"
+mount = "0.1.0"
+staticfile = "0.2.0"
+router = "*"
+log4rs = "*"
