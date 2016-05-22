@@ -9,29 +9,26 @@ use toml;
 
 
 // TODO: Add option type to this to allow optional values.
-#[derive(Debug)]
-#[derive(RustcDecodable)]
+#[derive(Debug, RustcDecodable)]
 pub struct Config {
     pub environment: EnvironmentConfig,
     pub github: GithubConfig,
     pub server: ServerConfig,
 }
 
-#[derive(Debug)]
-#[derive(RustcDecodable)]
+#[derive(Debug, RustcDecodable)]
 pub struct EnvironmentConfig {
     pub environment_name: String,
+    pub log_config: String,
 }
 
-#[derive(Debug)]
-#[derive(RustcDecodable)]
+#[derive(Debug, RustcDecodable)]
 pub struct GithubConfig{
     pub client_id: String,
     pub client_secret: String,
 }
 
-#[derive(Debug)]
-#[derive(RustcDecodable)]
+#[derive(Debug, RustcDecodable)]
 pub struct ServerConfig {
     pub root_url: String,
     pub port: u16,
@@ -61,7 +58,6 @@ impl Config {
 
     pub fn new(config_file_path: &Path) -> Result<Config, ConfigError> {
         let toml_value = load_file(config_file_path)?;
-        println!("Loaded toml: {:?}", toml_value);
         let mut decoder = toml::Decoder::new(toml_value);
         let config = Config::decode(&mut decoder)?;
         Ok(config)

@@ -3,44 +3,61 @@
 
 extern crate iron;
 extern crate mount;
+#[macro_use] extern crate router;
 
-
-#[macro_use]
-extern crate log;
+#[macro_use] extern crate log;
 extern crate log4rs;
 
 extern crate toml;
-
 extern crate rustc_serialize;
+extern crate docopt;
 
-#[macro_use] extern crate router;
-
-
-use iron::prelude::*;
 use std::path::Path;
 
+use iron::prelude::*;
 use mount::Mount;
+
+use docopt::Docopt;
+
+use config::serverConfig;
 
 mod handlers;
 mod config;
 
-use config::serverConfig;
+const USAGE: &'static str = "
+Commit Sparkles Server
+
+Usage:
+    commitsparkles (-h | --help)
+    commitsparkles --version
+    commitsparkles --config=<toml_config>
+
+Options:
+    -h --help                   Show this screen.
+    --version                   Show version.
+    --config=<toml_config>      Use a TOML config file.
+";
+
+#[derive(Debug, RustcDecodable)]
+struct Args {
+    flag_config: String,
+}
 
 
 fn main() {
-    match log4rs::init_file("config/logging.toml", Default::default()) {
-        Ok(_) => (),
-        Err(e) => panic!("Log initialisation failed! {:?}",e),
-    };
+    let args: Args = Docopt::new(USAGE)
+                             .and_then(|d| d.decode())
+                             .unwrap_or_else(|e| e.exit());
 
-    let server_config = match serverConfig::Config::new(
-        Path::new("config/dev.toml"))
-    {
-        Ok(_) => (),
-        Err(e) => panic!("Failed to load configuration. Error {:?}", e)
-    };
+    let config = serverConfig::Config::new(
+        Path::new(&args.flag_config))
+        .expect("Failed to load configuration.");
 
-    info!("Initializing Booster Engines");
+
+    log4rs::init_file(config.environment.log_config, Default::default())
+        .expect("Log initialisation failed!");
+
+    info!("Loaded configuration for environment {:?}", config.environment.environment_name);
 
     let mut mount = Mount::new();
 
