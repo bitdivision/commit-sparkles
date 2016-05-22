@@ -1,0 +1,21 @@
+configuration_name = "Development"
+
+[server]
+  
+  # The server's root address
+  root_address = "http://somewhere.com"
+  
+  # The port to serve on
+  port = 3000
+
+
+[github]
+  
+  # The client id from github OAuth application
+  client_id = ""
+
+  # The client secret from github OAuth application
+  client_secret = ""
+
+
+  

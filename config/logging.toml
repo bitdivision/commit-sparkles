@@ -1,0 +1,20 @@
+refresh_rate = 30
+
+[appenders.console]
+  kind = "console"
+
+[appenders.console.encoder]
+  pattern = "{d} [{t}] {h({1})} {M}:{m}{n}"
+
+[appenders.requests]
+  kind= "file"
+  path= "log/requests.log"
+
+  [encoder]
+    pattern= "{d} - {m}{n}"
+
+[root]
+  level = "debug"
+  appenders = ["console"]
+  additive = true
+
