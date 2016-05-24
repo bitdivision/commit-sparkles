@@ -10,6 +10,7 @@ staticfile = "0.2.0"
 router = "*"
 log4rs = { version = "0.4.3", features = [ "toml" ] }
 log = "*"
+logger = "*"
 toml = "*"
 docopt = "*"
 rustc-serialize = "*"

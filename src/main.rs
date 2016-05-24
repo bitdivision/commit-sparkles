@@ -6,6 +6,7 @@ extern crate mount;
 
 #[macro_use] extern crate log;
 extern crate log4rs;
+extern crate logger;
 
 extern crate toml;
 extern crate rustc_serialize;
@@ -18,7 +19,9 @@ use mount::Mount;
 
 use docopt::Docopt;
 
-use config::serverConfig;
+use config::server_config;
+
+use logger::Logger;
 
 mod handlers;
 mod config;
@@ -48,7 +51,7 @@ fn main() {
                              .and_then(|d| d.decode())
                              .unwrap_or_else(|e| e.exit());
 
-    let config = serverConfig::Config::new(Path::new(&args.flag_config))
+    let config = server_config::Config::new(Path::new(&args.flag_config))
         .expect("Failed to load configuration!");
 
     log4rs::init_file(config.environment.log_config, Default::default())
@@ -62,7 +65,13 @@ fn main() {
         get "/login" => handlers::login_handler,
     ));
 
-    Iron::new(mount).http("0.0.0.0:3000").unwrap();
+    let mut chain = Chain::new(mount);
+
+    let (logger_before, logger_after) = Logger::new(None);
+    chain.link_before(logger_before);
+    chain.link_after(logger_after);
+
+    Iron::new(chain).http("0.0.0.0:3000").unwrap();
 
     info!("Server initialised");
 }
