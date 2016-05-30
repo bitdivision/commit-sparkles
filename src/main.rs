@@ -32,12 +32,12 @@ Commit Sparkles Server
 Usage:
     commitsparkles (-h | --help)
     commitsparkles --version
-    commitsparkles --config=<toml_config>
+    commitsparkles [--config=<toml_config>]
 
 Options:
     -h --help                   Show this screen.
     --version                   Show version.
-    --config=<toml_config>      Use a TOML config file.
+    --config=<toml_config>      Use a TOML config file. [default: config/dev.toml]
 ";
 
 #[derive(Debug, RustcDecodable)]
@@ -63,15 +63,24 @@ fn main() {
 
     mount.mount("user", router!(
         get "/login" => handlers::login_handler,
+        get "/oauth/oauth_get_token" => handlers::oauth_get_token,
     ));
 
     let mut chain = Chain::new(mount);
 
+    // Set up the logger middleware
+    // This logs requests and responses to the console.
+    // TODO: Write a more standardised logger to use log macros.
     let (logger_before, logger_after) = Logger::new(None);
     chain.link_before(logger_before);
     chain.link_after(logger_after);
 
-    Iron::new(chain).http("0.0.0.0:3000").unwrap();
+    info!("Initializing Server on: {}:{}", config.server.host_ip, config.server.host_port);
 
-    info!("Server initialised");
+    // Need a &str to satisfy ToSocketAddrs. Passing &host_ip doesn't work unless hinted.
+    // TODO: Shouldn't auto deref take care of this?
+    let socket_addr: (&str, u16) = (&config.server.host_ip, config.server.host_port);
+
+    Iron::new(chain).http(socket_addr).unwrap();
+
 }

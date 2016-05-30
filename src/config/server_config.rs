@@ -31,7 +31,8 @@ pub struct GithubConfig{
 #[derive(Debug, RustcDecodable)]
 pub struct ServerConfig {
     pub root_url: String,
-    pub port: u16,
+    pub host_ip: String,
+    pub host_port: u16,
 }
 
 #[derive(Debug)]
