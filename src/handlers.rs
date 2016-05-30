@@ -1,6 +1,7 @@
 extern crate iron;
 
 extern crate router;
+extern crate bodyparser;
 
 use iron::prelude::*;
 use iron::status;
@@ -36,6 +37,12 @@ pub fn login_handler(req: &mut Request) -> IronResult<Response> {
 /// JWT will be returned to allow future authorization.
 ///
 pub fn oauth_get_token(req: &mut Request) -> IronResult<Response> {
+    let body = req.get::<bodyparser::Struct<GetToken>>();
+    match body {
+        Ok(Some(body)) => info!("Parsed to {:?}", body),
+        Ok(None) => error!("No body"),
+        Err(err) => error!("Error: {:?}", err)
+    }
     Ok(Response::with((status::Ok, "")))
 }
 
