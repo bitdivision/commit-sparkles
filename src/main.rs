@@ -1,4 +1,6 @@
 #![feature(question_mark)]
+#![feature(custom_derive, plugin)]
+#![plugin(serde_macros)]
 
 extern crate iron;
 extern crate mount;
@@ -25,6 +27,7 @@ use logger::Logger;
 
 mod handlers;
 mod config;
+mod data;
 
 const USAGE: &'static str = "
 Commit Sparkles Server
@@ -61,9 +64,8 @@ fn main() {
 
     let mut mount = Mount::new();
 
-    mount.mount("user", router!(
-        get "/login" => handlers::login_handler,
-        get "/oauth/oauth_get_token" => handlers::oauth_get_token,
+    mount.mount("auth", router!(
+        post "/oauth_get_token" => handlers::oauth_get_token,
     ));
 
     let mut chain = Chain::new(mount);

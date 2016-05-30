@@ -6,9 +6,8 @@ extern crate bodyparser;
 use iron::prelude::*;
 use iron::status;
 
-pub fn login_handler(req: &mut Request) -> IronResult<Response> {
-    Ok(Response::with((status::Ok, "Hello")))
-}
+use data::{GetToken};
+
 
 /// Called by the front-end after a successful OAuth redirect.
 ///
