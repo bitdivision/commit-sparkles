@@ -64,13 +64,6 @@ pub fn oauth_get_token(req: &mut Request) -> IronResult<Response> {
     let credentials = GithubCredentials::request(&config.github,
                                &body.code);
 
-    /*
-    //HACK! Replace soon. Promise
-    let mut res = client.get(&format!("https://github.com/login/oauth/access_token?client_id={}&client_secret={}&code={}", &config.github.client_id, &config.github.client_secret, &body.code)).send().unwrap();
-    let mut s = String::new();
-    res.read_to_string(&mut s).unwrap();
-    println!("Received response: {:?}", s);
-    */
     Ok(Response::with((status::Ok, "")))
 }
 
