@@ -52,6 +52,31 @@ impl Display for ConfigError {
 }
 
 #[derive(Debug)]
+pub enum APIErrorCode {
+    Json,
+    NoBody,
+    Unauthorized,
+    InvalidToken,
+    Unknown,
+}
+
+// TODO: Serialize APIErrorCode?
+
+#[derive(Debug)]
 pub struct APIError {
     error: String,
+    errorCode: APIErrorCode,
+}
+
+impl APIError {
+    pub fn new<E: Into<String>>(error: E, code: APIErrorCode) -> APIError {
+        APIError {
+            error: error.into(),
+            errorCode: code,
+        }
+    }
+    pub fn no_body() {
+        APIError::new("No JSON body was specified on the request",
+                     APIErrorCode::NoBody)
+    }
 }
