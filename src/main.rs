@@ -2,6 +2,7 @@
 #![feature(custom_derive, plugin)]
 #![plugin(serde_macros)]
 
+extern crate hyper;
 extern crate iron;
 extern crate mount;
 #[macro_use] extern crate router;

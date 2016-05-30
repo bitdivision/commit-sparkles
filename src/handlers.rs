@@ -2,13 +2,19 @@ extern crate iron;
 
 extern crate router;
 extern crate bodyparser;
+extern crate hyper;
+
+use std::io::Read;
 
 use iron::prelude::*;
 use iron::status;
+use hyper::client::Client;
+
+use persistent::Read as PersistentRead;
 
 use data::{GetToken};
 use errors::APIError;
-
+use config::server_config::Config;
 
 /// Called by the front-end after a successful OAuth redirect.
 ///
@@ -37,10 +43,10 @@ use errors::APIError;
 /// JWT will be returned to allow future authorization.
 ///
 pub fn oauth_get_token(req: &mut Request) -> IronResult<Response> {
-    let body = req.get::<bodyparser::Struct<GetToken>>();
-    match body {
+    let body = match req.get::<bodyparser::Struct<GetToken>>() {
         Ok(Some(body)) => {
             trace!("Decoded body to: {:?}", body);
+            body
         },
         Ok(None) => {
             let error = APIError::no_body();
@@ -50,7 +56,15 @@ pub fn oauth_get_token(req: &mut Request) -> IronResult<Response> {
             let error = APIError::bad_json();
             return Err(IronError::new(error.clone(), error))
         }
-    }
+    };
+
+    //HACK! Replace soon. Promise
+    let client = Client::new();
+    let config = req.get::<PersistentRead<Config>>().unwrap();
+    let mut res = client.get(&format!("https://github.com/login/oauth/access_token?client_id={}&client_secret={}&code={}", &config.github.client_id, &config.github.client_secret, &body.code)).send().unwrap();
+    let mut s = String::new();
+    res.read_to_string(&mut s).unwrap();
+    println!("Received response: {:?}", s);
 
     Ok(Response::with((status::Ok, "")))
 }
