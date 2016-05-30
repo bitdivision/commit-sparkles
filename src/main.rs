@@ -28,6 +28,7 @@ use logger::Logger;
 mod handlers;
 mod config;
 mod data;
+mod errors;
 
 const USAGE: &'static str = "
 Commit Sparkles Server
@@ -54,8 +55,13 @@ fn main() {
                              .and_then(|d| d.decode())
                              .unwrap_or_else(|e| e.exit());
 
-    let config = server_config::Config::new(Path::new(&args.flag_config))
-        .expect("Failed to load configuration!");
+    let config = match server_config::Config::new(Path::new(&args.flag_config)) {
+        Ok(config) => config,
+        Err(err) => {
+            println!("Failed to load configuration file! Error:\n{}", err);
+            return;
+        }
+    };
 
     log4rs::init_file(config.environment.log_config, Default::default())
         .expect("Log initialisation failed!");

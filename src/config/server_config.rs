@@ -1,4 +1,3 @@
-use std::{io, convert};
 use std::io::Read;
 use std::path::Path;
 use std::fs::File;
@@ -7,6 +6,7 @@ use rustc_serialize::Decodable;
 
 use toml;
 
+use errors::ConfigError;
 
 // TODO: Add option type to this to allow optional values.
 #[derive(Debug, RustcDecodable)]
@@ -33,25 +33,6 @@ pub struct ServerConfig {
     pub root_url: String,
     pub host_ip: String,
     pub host_port: u16,
-}
-
-#[derive(Debug)]
-pub enum ConfigError {
-    LoadIoError(io::Error),
-    ParseError(toml::ParserError),
-    DecodeError(toml::DecodeError),
-}
-
-impl convert::From<io::Error> for ConfigError {
-	fn from(err: io::Error) -> ConfigError {
-		ConfigError::LoadIoError(err)
-	}
-}
-
-impl From<toml::DecodeError> for ConfigError {
-	fn from(err: toml::DecodeError) -> ConfigError {
-		ConfigError::DecodeError(err)
-	}
 }
 
 
