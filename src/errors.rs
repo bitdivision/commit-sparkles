@@ -63,6 +63,7 @@ pub enum APIErrorCode {
     NoBody,
     Unauthorized,
     InvalidToken,
+    GithubError,
     Unknown,
 }
 
@@ -73,6 +74,7 @@ impl APIErrorCode {
             APIErrorCode::NoBody => Status::UnprocessableEntity,
             APIErrorCode::Unauthorized => Status::Unauthorized,
             APIErrorCode::InvalidToken => Status::Unauthorized,
+            APIErrorCode::GithubError => Status::InternalServerError,
             APIErrorCode::Unknown => Status::InternalServerError,
         }
     }
@@ -102,6 +104,11 @@ impl APIError {
     pub fn bad_json() -> APIError {
         APIError::new("Error while decoding JSON Body. Missing field?",
                      APIErrorCode::BadJSON)
+    }
+
+    pub fn github_error() -> APIError {
+        APIError::new("An error occurred while communicating with Github",
+                      APIErrorCode::GithubError)
     }
 
     pub fn status(&self) -> Status {

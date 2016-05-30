@@ -16,6 +16,8 @@ extern crate toml;
 extern crate rustc_serialize;
 extern crate serde_json;
 extern crate docopt;
+extern crate url;
+
 use std::path::Path;
 
 use iron::prelude::*;
@@ -33,6 +35,7 @@ mod handlers;
 mod config;
 mod data;
 mod errors;
+mod github;
 
 const USAGE: &'static str = "
 Commit Sparkles Server

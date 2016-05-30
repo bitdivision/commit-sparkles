@@ -8,13 +8,13 @@ use std::io::Read;
 
 use iron::prelude::*;
 use iron::status;
-use hyper::client::Client;
 
 use persistent::Read as PersistentRead;
 
 use data::{GetToken};
 use errors::APIError;
 use config::server_config::Config;
+use github::GithubCredentials;
 
 /// Called by the front-end after a successful OAuth redirect.
 ///
@@ -58,14 +58,19 @@ pub fn oauth_get_token(req: &mut Request) -> IronResult<Response> {
         }
     };
 
+    let config = req.get::<PersistentRead<Config>>().expect(
+        "Config not available on request!");
+
+    let credentials = GithubCredentials::request(&config.github,
+                               &body.code);
+
+    /*
     //HACK! Replace soon. Promise
-    let client = Client::new();
-    let config = req.get::<PersistentRead<Config>>().unwrap();
     let mut res = client.get(&format!("https://github.com/login/oauth/access_token?client_id={}&client_secret={}&code={}", &config.github.client_id, &config.github.client_secret, &body.code)).send().unwrap();
     let mut s = String::new();
     res.read_to_string(&mut s).unwrap();
     println!("Received response: {:?}", s);
-
+    */
     Ok(Response::with((status::Ok, "")))
 }
 
