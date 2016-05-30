@@ -5,6 +5,7 @@
 extern crate iron;
 extern crate mount;
 #[macro_use] extern crate router;
+extern crate persistent;
 
 #[macro_use] extern crate log;
 extern crate log4rs;
@@ -24,6 +25,8 @@ use docopt::Docopt;
 use config::server_config;
 
 use logger::Logger;
+
+use persistent::Read;
 
 mod handlers;
 mod config;
@@ -63,13 +66,12 @@ fn main() {
         }
     };
 
-    log4rs::init_file(config.environment.log_config, Default::default())
+    log4rs::init_file(&config.environment.log_config, Default::default())
         .expect("Log initialisation failed!");
 
     info!("Loaded configuration for environment {:?}", config.environment.environment_name);
 
     let mut mount = Mount::new();
-
     mount.mount("auth", router!(
         post "/oauth_get_token" => handlers::oauth_get_token,
     ));
@@ -82,6 +84,9 @@ fn main() {
     let (logger_before, logger_after) = Logger::new(None);
     chain.link_before(logger_before);
     chain.link_after(logger_after);
+
+    // Add some persistent data across requests
+    chain.link_before(Read::<server_config::Config>::one(config.clone()));
 
     info!("Initializing Server on: {}:{}", config.server.host_ip, config.server.host_port);
 
