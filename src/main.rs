@@ -12,8 +12,8 @@ extern crate logger;
 
 extern crate toml;
 extern crate rustc_serialize;
+extern crate serde_json;
 extern crate docopt;
-
 use std::path::Path;
 
 use iron::prelude::*;

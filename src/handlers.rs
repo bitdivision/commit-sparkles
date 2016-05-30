@@ -7,6 +7,7 @@ use iron::prelude::*;
 use iron::status;
 
 use data::{GetToken};
+use errors::APIError;
 
 
 /// Called by the front-end after a successful OAuth redirect.
@@ -39,20 +40,18 @@ pub fn oauth_get_token(req: &mut Request) -> IronResult<Response> {
     let body = req.get::<bodyparser::Struct<GetToken>>();
     match body {
         Ok(Some(body)) => {
-            trace!("Decoded body to: {}", body);
-            body
+            trace!("Decoded body to: {:?}", body);
         },
         Ok(None) => {
             let error = APIError::no_body();
-
-            Err(IronError::new(error.clone(), error)
+            return Err(IronError::new(error.clone(), error))
         }
         Err(err) => {
             let error = APIError::bad_json();
-
-            Err(IronError::new(error.clone(), error)
+            return Err(IronError::new(error.clone(), error))
         }
     }
+
     Ok(Response::with((status::Ok, "")))
 }
 

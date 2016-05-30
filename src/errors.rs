@@ -4,7 +4,13 @@ use std::io::Error as IoError;
 use std::error::Error;
 use std::convert::From;
 
+use iron::modifier::Modifier;
+use iron::response::Response;
+use iron::status::Status;
+use iron::error::IronError;
+
 use toml;
+use serde_json;
 
 #[derive(Debug)]
 pub enum ConfigError {
@@ -51,22 +57,36 @@ impl Display for ConfigError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub enum APIErrorCode {
-    Json,
+    BadJSON,
     NoBody,
     Unauthorized,
     InvalidToken,
     Unknown,
 }
 
+impl APIErrorCode {
+    pub fn status(&self) -> Status {
+        match *self {
+            APIErrorCode::BadJSON => Status::BadRequest,
+            APIErrorCode::NoBody => Status::UnprocessableEntity,
+            APIErrorCode::Unauthorized => Status::Unauthorized,
+            APIErrorCode::InvalidToken => Status::Unauthorized,
+            APIErrorCode::Unknown => Status::InternalServerError,
+        }
+    }
+}
+
+
 // TODO: Serialize APIErrorCode?
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub struct APIError {
     error: String,
     errorCode: APIErrorCode,
 }
+
 
 impl APIError {
     pub fn new<E: Into<String>>(error: E, code: APIErrorCode) -> APIError {
@@ -75,8 +95,42 @@ impl APIError {
             errorCode: code,
         }
     }
-    pub fn no_body() {
+    pub fn no_body() -> APIError{
         APIError::new("No JSON body was specified on the request",
                      APIErrorCode::NoBody)
+    }
+    pub fn bad_json() -> APIError {
+        APIError::new("Error while decoding JSON Body. Missing field?",
+                     APIErrorCode::BadJSON)
+    }
+
+    pub fn status(&self) -> Status {
+       self.errorCode.status()
+    }
+}
+
+impl Display for APIError {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        write!(f, "{}", self.error)
+    }
+}
+
+impl Error for APIError {
+    fn description(&self) -> &str {
+        &self.error
+    }
+}
+
+impl From<APIError> for IronError {
+	fn from(err: APIError) -> IronError {
+		IronError::new(err.clone(), err)
+	}
+}
+
+// Sets the status and body of the response for an error.
+impl Modifier<Response> for APIError {
+    fn modify(self, response: &mut Response) {
+        response.status = Some(self.status());
+        response.body = Some(Box::new(serde_json::to_string(&self).unwrap()))
     }
 }

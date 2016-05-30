@@ -3,32 +3,33 @@ use std::path::Path;
 use std::fs::File;
 
 use rustc_serialize::Decodable;
+use iron::typemap::Key;
 
 use toml;
 
 use errors::ConfigError;
 
 // TODO: Add option type to this to allow optional values.
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, RustcDecodable, Clone)]
 pub struct Config {
     pub environment: EnvironmentConfig,
     pub github: GithubConfig,
     pub server: ServerConfig,
 }
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, RustcDecodable, Clone)]
 pub struct EnvironmentConfig {
     pub environment_name: String,
     pub log_config: String,
 }
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, RustcDecodable, Clone)]
 pub struct GithubConfig{
     pub client_id: String,
     pub client_secret: String,
 }
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, RustcDecodable, Clone)]
 pub struct ServerConfig {
     pub root_url: String,
     pub host_ip: String,
@@ -56,4 +57,8 @@ fn load_file(toml_file_path: &Path) -> Result<toml::Value, ConfigError> {
         Some(toml) => Ok(toml::Value::Table(toml)),
         None => Err(ConfigError::ParseError(parser.errors.pop().unwrap())),
     }
+}
+
+impl Key for Config {
+    type Value = Config;
 }
