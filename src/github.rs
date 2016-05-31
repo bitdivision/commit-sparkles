@@ -1,9 +1,8 @@
 use std::io::Read;
-use std::env;
 
 use hyper::client::Client;
 use hyper::header::{Accept, qitem, UserAgent};
-use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
+use hyper::mime::{Mime, TopLevel, SubLevel};
 use hyper::status::StatusCode;
 
 use serde_json;
@@ -57,7 +56,7 @@ impl GithubCredentials {
                             .send()
                             .unwrap();
 
-        match(response.status) {
+        match response.status {
             StatusCode::Ok=> (),
             _ => return Err(APIError::github_error())
         }

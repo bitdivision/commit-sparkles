@@ -4,8 +4,6 @@ extern crate router;
 extern crate bodyparser;
 extern crate hyper;
 
-use std::io::Read;
-
 use iron::prelude::*;
 use iron::status;
 
@@ -52,7 +50,7 @@ pub fn oauth_get_token(req: &mut Request) -> IronResult<Response> {
             let error = APIError::no_body();
             return Err(IronError::new(error.clone(), error))
         }
-        Err(err) => {
+        Err(_) => {
             let error = APIError::bad_json();
             return Err(IronError::new(error.clone(), error))
         }

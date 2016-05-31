@@ -86,7 +86,7 @@ impl APIErrorCode {
 #[derive(Debug, Clone, Serialize)]
 pub struct APIError {
     error: String,
-    errorCode: APIErrorCode,
+    error_code: APIErrorCode,
 }
 
 
@@ -94,7 +94,7 @@ impl APIError {
     pub fn new<E: Into<String>>(error: E, code: APIErrorCode) -> APIError {
         APIError {
             error: error.into(),
-            errorCode: code,
+            error_code: code,
         }
     }
     pub fn no_body() -> APIError{
@@ -112,7 +112,7 @@ impl APIError {
     }
 
     pub fn status(&self) -> Status {
-       self.errorCode.status()
+       self.error_code.status()
     }
 }
 
