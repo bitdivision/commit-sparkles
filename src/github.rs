@@ -61,9 +61,17 @@ impl GithubCredentials {
             _ => return Err(APIError::github_error())
         }
 
+
         // TODO: Use content-length to set capacity
         let mut response_string = String::new();
         response.read_to_string(&mut response_string).unwrap();
+
+        // Github seems to return a 200 with error content if there's a problem
+        // with one of the parameters. So check if the string contains 'error'
+        // Horrible, but fine for the moment.
+        if response_string.contains("error_uri") {
+            return Err(APIError::github_error());
+        }
 
         let credentials : GithubCredentials = match serde_json::from_str(&response_string) {
             Err(_) => return Err(APIError::github_error()),

@@ -60,7 +60,7 @@ pub fn oauth_get_token(req: &mut Request) -> IronResult<Response> {
         "Config not available on request!");
 
     let credentials = GithubCredentials::request(&config.github,
-                               &body.code);
+                               &body.code)?;
 
     Ok(Response::with((status::Ok, "")))
 }

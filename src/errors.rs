@@ -57,6 +57,8 @@ impl Display for ConfigError {
     }
 }
 
+// TODO: Serialize this to an actual error code?
+// It seems to be serialized to object with name and empty array at the moment.
 #[derive(Debug, Clone, Serialize)]
 pub enum APIErrorCode {
     BadJSON,
@@ -80,8 +82,6 @@ impl APIErrorCode {
     }
 }
 
-
-// TODO: Serialize APIErrorCode?
 
 #[derive(Debug, Clone, Serialize)]
 pub struct APIError {
