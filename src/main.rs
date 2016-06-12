@@ -18,6 +18,10 @@ extern crate serde_json;
 extern crate docopt;
 extern crate url;
 
+extern crate r2d2;
+extern crate r2d2_postgres;
+extern crate postgres;
+
 use std::path::Path;
 
 use iron::prelude::*;
@@ -29,13 +33,14 @@ use config::server_config;
 
 use logger::Logger;
 
-use persistent::Read;
+use persistent::{Read, Write};
 
 mod handlers;
 mod config;
 mod data;
 mod errors;
 mod github;
+mod database;
 
 const USAGE: &'static str = "
 Commit Sparkles Server
@@ -89,8 +94,11 @@ fn main() {
     chain.link_before(logger_before);
     chain.link_after(logger_after);
 
+    let pool = database::get_connection_pool("postgres://postgres@localhost");
+
     // Add some persistent data across requests
     chain.link_before(Read::<server_config::Config>::one(config.clone()));
+    chain.link_before(Write::<database::Db>::one(pool));
 
     info!("Initializing Server on: {}:{}", config.server.host_ip, config.server.host_port);
 
