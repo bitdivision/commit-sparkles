@@ -7,6 +7,7 @@ extern crate iron;
 extern crate mount;
 #[macro_use] extern crate router;
 extern crate persistent;
+extern crate bodyparser;
 
 #[macro_use] extern crate log;
 extern crate log4rs;
@@ -85,6 +86,8 @@ fn main() {
         post "/oauth_get_token" => handlers::oauth_get_token,
     ));
 
+    const MAX_BODY_LENGTH: usize = 1024 * 1024 * 10;
+
     let mut chain = Chain::new(mount);
 
     // Set up the logger middleware
@@ -94,11 +97,12 @@ fn main() {
     chain.link_before(logger_before);
     chain.link_after(logger_after);
 
-    let pool = database::get_connection_pool("postgres://postgres@localhost");
+    let pool = database::Db::get_connection_pool("postgres://postgres@localhost");
 
     // Add some persistent data across requests
     chain.link_before(Read::<server_config::Config>::one(config.clone()));
     chain.link_before(Write::<database::Db>::one(pool));
+    chain.link_before(Read::<bodyparser::MaxBodyLength>::one(MAX_BODY_LENGTH));
 
     info!("Initializing Server on: {}:{}", config.server.host_ip, config.server.host_port);
 

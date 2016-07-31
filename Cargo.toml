@@ -5,7 +5,7 @@ authors = ["Richard Fortescue-Webb <rfwebb@gmail.com>"]
 
 [dependencies]
 iron = "*"
-mount = "0.1.0"
+mount = "0.2.1"
 staticfile = "0.2.0"
 router = "*"
 log4rs = { version = "0.4.3", features = [ "toml" ] }
@@ -15,9 +15,9 @@ toml = "*"
 docopt = "*"
 rustc-serialize = "*"
 bodyparser = "*"
-serde = "*"
-serde_json = "*"
-serde_macros = "*"
+serde = "0.7.5"
+serde_json = "0.7.1"
+serde_macros = "0.7.5"
 persistent = "*"
 hyper = "*"
 url = "*"
