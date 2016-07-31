@@ -13,6 +13,8 @@ use data::{GetToken};
 use errors::APIError;
 use config::server_config::Config;
 use github::GithubCredentials;
+use data::User;
+use database::Db;
 
 /// Called by the front-end after a successful OAuth redirect.
 ///
@@ -41,6 +43,9 @@ use github::GithubCredentials;
 /// JWT will be returned to allow future authorization.
 ///
 pub fn oauth_get_token(req: &mut Request) -> IronResult<Response> {
+
+    let connection = Db::from_request(req);
+
     let body = match req.get::<bodyparser::Struct<GetToken>>() {
         Ok(Some(body)) => {
             trace!("Decoded body to: {:?}", body);
@@ -61,6 +66,9 @@ pub fn oauth_get_token(req: &mut Request) -> IronResult<Response> {
 
     let credentials = GithubCredentials::request(&config.github,
                                &body.code)?;
+
+    let user = User::create(&connection, credentials);
+
 
     Ok(Response::with((status::Ok, "")))
 }

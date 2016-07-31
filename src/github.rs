@@ -16,9 +16,9 @@ const GITHUB_HOST: &'static str = "https://github.com";
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GithubCredentials {
-    access_token: String,
-    scope: String,
-    token_type: String,
+    pub access_token: String,
+    pub scope: String,
+    pub token_type: String,
 }
 
 impl GithubCredentials {
