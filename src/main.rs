@@ -97,7 +97,8 @@ fn main() {
     chain.link_before(logger_before);
     chain.link_after(logger_after);
 
-    let pool = database::Db::get_connection_pool("postgres://postgres@localhost");
+    let pool = database::Db::get_connection_pool(&config.server.pg_connection_string);
+    info!("Postgres connection pool created for: {}", &config.server.pg_connection_string);
 
     // Add some persistent data across requests
     chain.link_before(Read::<server_config::Config>::one(config.clone()));

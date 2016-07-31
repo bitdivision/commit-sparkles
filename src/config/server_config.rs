@@ -34,6 +34,7 @@ pub struct ServerConfig {
     pub root_url: String,
     pub host_ip: String,
     pub host_port: u16,
+    pub pg_connection_string: String,
 }
 
 
