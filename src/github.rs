@@ -1,11 +1,6 @@
-use std::io::Read;
-
-use hyper::client::Client;
-use hyper::header::{Accept, qitem, UserAgent};
-use hyper::mime::{Mime, TopLevel, SubLevel};
-use hyper::status::StatusCode;
-
-use serde_json;
+use reqwest;
+use reqwest::header::{Accept, UserAgent};
+use reqwest::StatusCode;
 
 use url::Url;
 
@@ -28,9 +23,6 @@ impl GithubCredentials {
         // TODO Error Handling
         let endpoint = "/login/oauth/access_token";
 
-        // TODO: move this into a persistent client pool?
-        let client = Client::new();
-
         let url = format!("{}{}", GITHUB_HOST, endpoint);
 
         let mut request_url = Url::parse(&url)
@@ -41,39 +33,32 @@ impl GithubCredentials {
                    .append_pair("client_secret", &github_constants.client_secret)
                    .append_pair("code", &code);
 
-        // Yikes! This seems rather excessive.
-        // Accept: application/json
-        let accept_header = Accept(vec![
-                qitem(Mime(TopLevel::Application, SubLevel::Json,
-                vec![])),
-            ]);
 
-        let user_agent = UserAgent(format!("CommitSparkles/{}", env!("CARGO_PKG_VERSION")));
+        // TODO: move this into a persistent client pool?
+        let client = reqwest::Client::new();
 
         let mut response = client.get(request_url)
-                            .header(accept_header)
-                            .header(user_agent)
-                            .send()
-                            .unwrap();
+                                 .header(Accept::json())
+                                 .header(UserAgent::new(format!("CommitSparkles/{}", env!("CARGO_PKG_VERSION"))))
+                                 .send()
+                                 .unwrap();
 
-        match response.status {
+
+        match response.status() {
             StatusCode::Ok=> (),
             _ => return Err(APIError::github_error())
         }
 
-
-        // TODO: Use content-length to set capacity
-        let mut response_string = String::new();
-        response.read_to_string(&mut response_string).unwrap();
+        let text_response = response.text().unwrap();
 
         // Github seems to return a 200 with error content if there's a problem
         // with one of the parameters. So check if the string contains 'error'
         // Horrible, but fine for the moment.
-        if response_string.contains("error_uri") {
+        if text_response.contains("error_uri") {
             return Err(APIError::github_error());
         }
 
-        let credentials : GithubCredentials = match serde_json::from_str(&response_string) {
+        let credentials : GithubCredentials = match response.json() {
             Err(_) => return Err(APIError::github_error()),
             Ok(credentials) => credentials
         };

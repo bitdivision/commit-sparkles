@@ -15,8 +15,7 @@ use serde_json;
 #[derive(Debug)]
 pub enum ConfigError {
     LoadIoError(IoError),
-    ParseError(toml::ParserError),
-    DecodeError(toml::DecodeError),
+    ParseError(toml::de::Error),
 }
 
 // Probably unnecessary, just trying out serious error handling
@@ -25,7 +24,6 @@ impl Error for ConfigError {
         match *self {
             ConfigError::LoadIoError(_) => "An error occurred when loading the configuration file",
             ConfigError::ParseError(_) => "An error occurred when parsing the configuration file",
-            ConfigError::DecodeError(_) => "An error occurred when decoding the configuration file",
         }
     }
 
@@ -45,10 +43,10 @@ impl From<IoError> for ConfigError {
 	}
 }
 
-impl From<toml::DecodeError> for ConfigError {
-	fn from(err: toml::DecodeError) -> ConfigError {
-		ConfigError::DecodeError(err)
-	}
+impl From<toml::de::Error> for ConfigError {
+    fn from(err: toml::de::Error) -> ConfigError {
+        ConfigError::ParseError(err)
+    }
 }
 
 impl Display for ConfigError {

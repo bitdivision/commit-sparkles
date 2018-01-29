@@ -1,21 +1,20 @@
-#![feature(question_mark)]
 #![feature(custom_derive, plugin)]
-#![plugin(serde_macros)]
 
-extern crate hyper;
+extern crate reqwest;
 extern crate iron;
 extern crate mount;
-#[macro_use] extern crate router;
 extern crate persistent;
 extern crate bodyparser;
 
+extern crate toml;
+#[macro_use] extern crate router;
 #[macro_use] extern crate log;
 extern crate log4rs;
 extern crate logger;
 
-extern crate toml;
-extern crate rustc_serialize;
+#[macro_use] extern crate serde_derive;
 extern crate serde_json;
+
 extern crate docopt;
 extern crate url;
 
@@ -57,7 +56,7 @@ Options:
     --config=<toml_config>      Use a TOML config file. [default: config/dev.toml]
 ";
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     flag_config: String,
 }
@@ -65,7 +64,7 @@ struct Args {
 
 fn main() {
     let args: Args = Docopt::new(USAGE)
-                             .and_then(|d| d.decode())
+                             .and_then(|d| d.deserialize())
                              .unwrap_or_else(|e| e.exit());
 
     let config = match server_config::Config::new(Path::new(&args.flag_config)) {
@@ -82,8 +81,9 @@ fn main() {
     info!("Loaded configuration for environment {:?}", config.environment.environment_name);
 
     let mut mount = Mount::new();
+
     mount.mount("auth", router!(
-        post "/oauth_get_token" => handlers::oauth_get_token,
+        index: post "/oauth_get_token" => handlers::oauth_get_token,
     ));
 
     const MAX_BODY_LENGTH: usize = 1024 * 1024 * 10;

@@ -26,7 +26,6 @@ impl User {
             .expect("Could not insert user into database");
     }
 
-
     pub fn create(connection: &Connection, credentials: GithubCredentials) -> User {
 
         let user = User {
